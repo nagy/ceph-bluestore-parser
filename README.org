@@ -1,0 +1,47 @@
+#+TITLE: ceph-bluestore-parser
+
+Parse a Ceph BlueStore Block device and convert it to TOML and vice-versa.
+
+#+begin_src toml
+fsid = '55ba2294-3e24-478f-bee0-9dca4c231dd9'
+
+[bluefs_super]
+osd_uuid = '55ba22943e24478fbee09dca4c231dd9'
+uuid = 'bb651cd2cee648a98743a1262c941f2f'
+
+[meta]
+bfm_blocks = '3932160'
+bfm_blocks_per_key = '128'
+bfm_bytes_per_block = '4096'
+bfm_size = '16106127360'
+bluefs = '1'
+ceph_fsid = '4b687c5c-5a20-4a77-8774-487989fd0bc7'
+ceph_version_when_created = 'ceph version 19.2.2 (0eceb0defba60152a8182f7bd87d164b639885b8) squid (stable)'
+created_at = '2025-07-26T14:30:19.209828Z'
+description = 'main'
+elastic_shared_blobs = '1'
+epoch = '14'
+kv_backend = 'rocksdb'
+magic = 'ceph osd volume v026'
+multi = 'yes'
+ready = 'ready'
+whoami = '0'
+
+[[bluefs_file]]
+# ...
+#+end_src
+
+* Features
+ - Partial state support
+ - Accumulatable state representation ->  State1 + State2 = State3
+
+* Known issues:
+ - does not preserve the sort order of labels
+
+* More information
+- https://docs.ceph.com/en/latest/rados/configuration/storage-devices/#bluestore
+- https://docs.ceph.com/en/latest/dev/encoding/
+
+* License
+
+[[./LICENSE][AGPL-3.0]]
