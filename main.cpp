@@ -8,7 +8,15 @@
 #include <toml++/toml.hpp>
 
 // using namespace std;
-using std::string, std::map;
+using std::string, std::map, std::to_string;
+
+namespace std {
+  std::string to_string(const toml::table& node) {
+    std::ostringstream oss;
+    oss << node << std::endl;
+    return oss.str();
+  }
+}
 
 void dumpArray(std::string_view data, std::ostream &out, bool space_and_newline = true) {
   bool collapse = false;
@@ -60,8 +68,8 @@ struct bluefs_super_t{
 
   toml::table as_toml() const{
     return toml::table {
-      { "uuid", dumpArray(std::string_view((char*)uuid, sizeof uuid))},
-      { "osd_uuid", dumpArray(std::string_view((char*)osd_uuid, sizeof osd_uuid))},
+      {"uuid", dumpArray(std::string_view((char*)uuid, sizeof uuid))},
+      {"osd_uuid", dumpArray(std::string_view((char*)osd_uuid, sizeof osd_uuid))},
     };
   }
 };
@@ -154,20 +162,16 @@ struct BlueStoreState{
   }
 
   string as_toml() const{
-    toml::table tbl{
+    return std::to_string(toml::table{
       {"fsid", fsid},
       {"bluefs_super", bluefs_super.as_toml()},
-    };
-    toml::table meta{
       {"description", description},
-    };
-    for(auto const& [key, value] : _meta){
-      meta.insert(key,value);
-    }
-    tbl.insert("meta",meta);
-    std::ostringstream oss;
-    oss << tbl << std::endl;
-    return oss.str();
+      {"meta", [&]()-> toml::table{
+        toml::table ret;
+        ret.insert(_meta.begin(), _meta.end());
+        return ret;
+      }()},
+    });
   }
 
   friend std::ostream& operator<<(std::ostream& os, BlueStoreState const& a) {
