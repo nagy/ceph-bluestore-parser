@@ -5,14 +5,6 @@
 
 using std::string, std::map;
 
-namespace std {
-std::string to_string(const toml::table &node) {
-  std::ostringstream oss;
-  oss << node << std::endl;
-  return oss.str();
-}
-} // namespace std
-
 void dumpArray(std::string_view data, std::ostream &out,
                bool space_and_newline = true) {
   bool collapse = false;
@@ -59,7 +51,7 @@ struct bluefs_super_t {
 
   bluefs_super_t() : uuid{0}, osd_uuid{0}, version(0), block_size(0) {};
 
-  toml::table as_toml() const {
+  toml::table to_toml() const {
     return toml::table{
         {"uuid", dumpArray(std::string_view((char *)uuid, sizeof uuid))},
         {"osd_uuid",
@@ -156,10 +148,10 @@ struct BlueStoreState {
     return result;
   }
 
-  string as_toml() const {
-    return std::to_string(toml::table{
+  toml::table to_toml() const {
+    return toml::table{
         {"fsid", fsid},
-        {"bluefs_super", bluefs_super.as_toml()},
+        {"bluefs_super", bluefs_super.to_toml()},
         {"description", description},
         {"meta",
          [&]() -> toml::table {
@@ -167,11 +159,11 @@ struct BlueStoreState {
            ret.insert(_meta.begin(), _meta.end());
            return ret;
          }()},
-    });
+    };
   }
 
   friend std::ostream &operator<<(std::ostream &os, BlueStoreState const &a) {
-    return os << a.as_toml();
+    return os << a.to_toml();
   }
 };
 
