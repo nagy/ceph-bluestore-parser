@@ -11,6 +11,7 @@ stdenv.mkDerivation {
   src = lib.cleanSource ./.;
 
   buildInputs = [
+    pkgs.boost
     pkgs.tomlplusplus
   ];
 
