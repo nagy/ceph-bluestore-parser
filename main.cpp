@@ -1,13 +1,8 @@
-#include <cassert>
-#include <cstdint>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <toml++/toml.hpp>
 
-// using namespace std;
 using std::string, std::map;
 
 namespace std {
@@ -181,12 +176,9 @@ struct BlueStoreState {
 };
 
 int main() {
-  std::ifstream is("testfile.bin", std::ios::binary);
-  BlueStoreState bss(is);
+  BlueStoreState bss(std::cin);
   bss.parse();
-
   std::cout << bss << std::endl;
-
   // // print unparsed bytes
   // std::cout << "unkown bytes:" << std::endl;
   // dumpArray(bss2._unknown, std::cout);

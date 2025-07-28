@@ -6,7 +6,7 @@
 
 stdenv.mkDerivation {
   pname = "ceph-bluestore-parser";
-  version = "0-unstable-2025-07-26";
+  version = "0-unstable-2025-07-28";
 
   src = lib.cleanSource ./.;
 
@@ -14,13 +14,11 @@ stdenv.mkDerivation {
     pkgs.tomlplusplus
   ];
 
-  buildPhase = ''
-    $CXX main.cpp -DTOML_HEADER_ONLY=0 -ltomlplusplus -fdiagnostics-color=always -Wall -Wextra -ltomlplusplus -o ceph-bluestore-parser
-  '';
-
-  installPhase = ''
-    install -Dm755 -t $out/bin/ ceph-bluestore-parser
-  '';
+  nativeBuildInputs = [
+    pkgs.pkg-config
+    pkgs.meson
+    pkgs.ninja
+  ];
 
   meta = {
     description = "Convert between Ceph BlueStore on-disk format and TOML.";
