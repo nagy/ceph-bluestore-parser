@@ -8,7 +8,7 @@
 #include <toml++/toml.hpp>
 
 // using namespace std;
-using std::string, std::map, std::to_string;
+using std::string, std::map;
 
 namespace std {
 std::string to_string(const toml::table &node) {
@@ -31,7 +31,6 @@ void dumpArray(std::string_view data, std::ostream &out,
           << static_cast<int>(ch);
       line += oss.str();
     }
-    // line += std::printf("%02x", ch);
     if ((i + 1) % 16 == 0 || i == size - 1) {
       if (line == "00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00") {
         if (!collapse) {
@@ -44,10 +43,8 @@ void dumpArray(std::string_view data, std::ostream &out,
         collapse = false;
         line = "";
       }
-    } else {
-      if (space_and_newline) {
-        line += " ";
-      }
+    } else if (space_and_newline) {
+      line += " ";
     }
   }
 }
@@ -157,6 +154,10 @@ struct BlueStoreState {
     result.fsid = other.fsid;
     result.bluefs_super = other.bluefs_super;
     result.description = other.description;
+    for (const auto &[key, value] : other._meta) {
+      result._meta[key] = other._meta.at(key);
+    }
+    // for (const auto &[key, value] : other._bluefs_files) {}
     return result;
   }
 
@@ -184,7 +185,7 @@ int main() {
   BlueStoreState bss(is);
   bss.parse();
 
-  std::cout << (bss) << std::endl;
+  std::cout << bss << std::endl;
 
   // // print unparsed bytes
   // std::cout << "unkown bytes:" << std::endl;
