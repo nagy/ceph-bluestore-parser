@@ -6,25 +6,23 @@
 
 using std::string, std::map;
 
-void dumpArray(std::string_view data, std::ostream &out,
-               bool space_and_newline = true) {
-  size_t size = data.size();
-  string line;
-  for (size_t i = 0; i < size; ++i) {
-    const unsigned char ch = data[i];
-    {
-      std::ostringstream oss;
-      oss << std::hex << std::setfill('0') << std::setw(2)
-          << static_cast<int>(ch);
-      line += oss.str();
-    }
-    if ((i + 1) % 16 == 0 || i == size - 1) {
-      out << line << (space_and_newline ? "\n" : "");
-      line = "";
-    } else if (space_and_newline) {
-      line += " ";
+void dumpArray(std::string_view data, std::ostream &out) {
+  std::ostringstream oss;
+  oss << std::hex << std::setfill('0') << std::setw(2);
+  for (size_t i = 0; i < data.size(); ++i) {
+    oss.str("");
+    oss << static_cast<int>((unsigned char)data[i]);
+    out << oss.str();
+    if ((i + 1) % 16 == 0 || i == data.size() - 1) {
+      // out << "\n";
     }
   }
+}
+
+[[nodiscard]] string dumpArray(std::string_view data) {
+  std::ostringstream ret;
+  dumpArray(data, ret);
+  return ret.str();
 }
 
 map<string, string> convertTomlTableToStringMap(const toml::table &table) {
@@ -37,33 +35,27 @@ map<string, string> convertTomlTableToStringMap(const toml::table &table) {
   return result;
 }
 
-[[nodiscard]] string dumpArray(std::string_view data) {
-  std::ostringstream ret;
-  dumpArray(data, ret, false);
-  return ret.str();
-}
-
 struct bluefs_super_t {
-  unsigned char _unknown[4];
   unsigned char uuid[16];
   unsigned char osd_uuid[16];
   uint64_t version;
   uint32_t block_size;
   // bluefs_fnode_t log_fnode;
-  bluefs_super_t() : uuid{0}, osd_uuid{0}, version(0), block_size(0) {};
+
+  bluefs_super_t() : uuid{0}, osd_uuid{0}, version{0}, block_size{0} {};
 
   bluefs_super_t(const toml::table &table) : bluefs_super_t() {
     {
       const string parsed_uuid = *table["uuid"].value<string>();
       const string hash = boost::algorithm::unhex(parsed_uuid);
-      assert(hash.size() == 16);
+      assert(hash.size() == sizeof uuid);
       std::copy(hash.begin(), hash.end(), uuid);
     };
 
     {
       const string parsed_osd_uuid = *table["osd_uuid"].value<string>();
       const string hash = boost::algorithm::unhex(parsed_osd_uuid);
-      assert(hash.size() == 16);
+      assert(hash.size() == sizeof osd_uuid);
       std::copy(hash.begin(), hash.end(), osd_uuid);
     };
   };
@@ -138,7 +130,7 @@ struct BlueStoreState {
     parse(is, _compat_version);
     assert(_compat_version == 1);
 
-    parse(is, super._unknown);
+    is.seekg(0x4, is.cur); // unknown as of now
     parse(is, super.uuid);
     parse(is, super.osd_uuid);
 
@@ -195,8 +187,10 @@ private:
 };
 
 int main() {
-  const BlueStoreState bss(std::cin);
-  std::cout << (toml::table)bss << std::endl;
+  using std::cout, std::cin, std::endl;
+
+  const BlueStoreState bss(cin);
+  cout << (toml::table)bss << endl;
 
   // To parse from TOML
   // const toml::table tbl = toml::parse(std::cin);
@@ -208,11 +202,12 @@ int main() {
   // const BlueStoreState s3 = s1 + s2;
 
   // print unparsed bytes
-  // std::cout << "unknown bytes:" << std::endl;
-  // std::cout << dumpArray(bss2._unknown, std::cout) << std::endl;
-  // std::cout << "bluefs_superblock:" << std::endl;
-  // std::cout << dumpArray(std::string((char *)&bss2.bluefs_super,
-  //                                    sizeof bss2.bluefs_super))
-  //           << std::endl;
+  cout << "\nunknown bytes:\n";
+  cout << dumpArray(bss._unknown) << endl;
+  // const BlueStoreState bss2;
+  // cout << "\nbluefs_superblock:\n";
+  // cout << dumpArray(
+  //             string((char *)&bss2.bluefs_super, sizeof bss2.bluefs_super))
+  //      << endl;
   return 0;
 }

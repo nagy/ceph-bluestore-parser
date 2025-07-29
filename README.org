@@ -35,7 +35,7 @@ whoami = '0'
  - Partial state support
  - Accumulatable state representation: State1 + State2 = State3
 
-* Known issues:
+* Known issues
  - does not preserve the sort order of labels
 
 * More information
